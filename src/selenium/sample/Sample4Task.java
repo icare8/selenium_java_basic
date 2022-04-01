@@ -1,6 +1,7 @@
 package selenium.sample;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -38,14 +39,29 @@ public class Sample4Task {
     public void enterNumber() throws Exception {
 //         TODO:
 //        enter a number under "Number"
+        WebElement field = driver.findElement(By.id("number"));
+        WebElement button =  driver.findElement(By.id("number"));
+        String numberToEnter = "404";
+        driver.findElement(By.name("vfb-9")).clear();
+        driver.findElement(By.name("vfb-9")).sendKeys(numberToEnter);
 //        check that button is not clickable "Clear Result"
+        assertFalse(driver.findElement(By.id("clear_result_button_number")).isEnabled() );
 //        check that text is not displayed
+        assertFalse(driver.findElement(By.id("result_number")).isDisplayed() );
 //        click on "Result" button
+       driver.findElement(By.id("result_button_number")).click();
 //        check that text is displayed
+        assertTrue(driver.findElement(By.id("result_number")).isDisplayed() );
 //        check that the correct Text appears ("You entered number: "NUMBER YOU ENTERED"")
+        assertEquals(String.format("You entered number: \"%s\"",numberToEnter), driver.findElement(By.id("result_number")).getText() );
 //        check that the button "Clear Result" is clickable now
+        assertTrue(driver.findElement(By.id("clear_result_button_number")).isEnabled() );
 //        click on "Clear Result"
+        driver.findElement(By.id("clear_result_button_number")).click();
 //        check that the text is still (""), but it is not displayed
+        assertEquals("", driver.findElement(By.id("result_number")).getText() );
+        assertFalse(driver.findElement(By.id("result_number")).isDisplayed());
+
     }
 
     @Test
@@ -55,5 +71,12 @@ public class Sample4Task {
 //        click on "This is a link to Homepage"
 //        check that current url is not base_url
 //        verify that current url is homepage
+        String homepage = "https://kristinek.github.io/site/";
+        String linkId = "homepage_link";
+        Assert.assertEquals(base_url, driver.getCurrentUrl() );
+        WebElement link1 = driver.findElement(By.id(linkId));
+        link1.click();
+        Assert.assertNotEquals(base_url, driver.getCurrentUrl() );
+        Assert.assertEquals(homepage, driver.getCurrentUrl() );
     }
 }
