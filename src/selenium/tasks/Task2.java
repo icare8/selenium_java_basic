@@ -32,13 +32,13 @@ public class Task2 {
 
     @Test
     public void initialFeedbackPage() throws Exception {
-//         TODO:
 //         check that all field are empty and no tick are clicked
         List<WebElement> inputs = driver.findElements(By.tagName("input"));
         inputs.forEach((element) -> {
 //            System.out.println(element.getAttribute("value"));
             assertFalse(element.isSelected() && element.isEnabled());
         });
+        assertTrue(driver.findElement(By.name("comment")).getAttribute("value").isEmpty());
 //         "Don't know" is selected in "Genre"
         assertTrue(driver.findElement(By.cssSelector("input.w3-radio:nth-of-type(3)")).isSelected());
 //         "Choose your option" in "How do you like us?"
@@ -56,7 +56,6 @@ public class Task2 {
 
     @Test
     public void emptyFeedbackPage() throws Exception {
-//         TODO:
 //         click "Send" without entering any data
         driver.findElement(By.cssSelector("button.w3-btn-block.w3-blue.w3-section")).click();
 //         check fields are empty or null
@@ -90,6 +89,7 @@ public class Task2 {
     static String testLanguage = "";
     static String testOption = "Good";
     static String testGender = "female";
+    static int optionsIndex = 1;
 
     public void fillWholeForm() {
         List<WebElement> inputs = driver.findElements(By.tagName("input"));
@@ -112,13 +112,17 @@ public class Task2 {
         /*Ignore trailing comma in languages list*/
         testLanguage = testLanguage.substring(0, testLanguage.length() - 1);
         Select selector = new Select(driver.findElement(By.id("like_us")));
-        selector.selectByIndex(1);
+        if (optionsIndex == 0) {
+            testOption = "null";
+        } else {
+            selector.selectByIndex(optionsIndex);
+            testOption = selector.getOptions().get(optionsIndex).getText();
+        }
         driver.findElement(By.cssSelector("textarea.w3-input.w3-border")).sendKeys(testComment);
-
     }
 
 
-    public void checkFields() {
+    public void checkFieldsFeedback() {
         driver.findElements(By.cssSelector("div.w3-container > div.description > p ")).forEach(
                 (element) -> {
                     System.out.println(element.getText());
@@ -149,15 +153,57 @@ public class Task2 {
                 });
     }
 
+    /*A simpler alternative to checkFields() */
+    public void checkFieldsFeedback2() {
+        WebElement result = driver.findElement(By.cssSelector("div.w3-container"));
+        String expected = String.format("" +
+                        "Your name: %s\n" +
+                        "Your age: %s\n" +
+                        "Your language: %s\n" +
+                        "Your genre: %s\n" +
+                        "Your option of us: %s\n" +
+                        "Your comment: %s",
+                testName,
+                testAge,
+                testLanguage,
+                testGender,
+                testOption.equals("null") ? "Choose your options" : testOption,
+                testComment
+        );
+        assertEquals(expected, result.getText());
+    }
+
+    /*Check fields in the start form() */
+    public void checkFieldsStartPage() {
+        assertEquals(testName, driver.findElement(By.id("fb_name")).getAttribute("value"));
+        assertEquals(testAge, driver.findElement(By.id("fb_age")).getAttribute("value"));
+
+        List<WebElement> languages = driver.findElements(By.name("language"));
+        for (WebElement l : languages) {
+            assertTrue(l.isSelected());
+        }
+
+        String actualGender = driver.findElement(By.cssSelector("[name='gender']:nth-of-type(2)")).getAttribute("value");
+        assertEquals(testGender, actualGender);
+
+        Select dropdown = new Select(driver.findElement(By.id("like_us")));
+        List<WebElement> selectedOptions = dropdown.getAllSelectedOptions();
+        assertEquals(1, selectedOptions.size());
+        String dropdownItem = selectedOptions.get(0).getText();
+        assertEquals(testOption, dropdownItem);
+
+        String actualComment = driver.findElement(By.name("comment")).getAttribute("value");
+        assertEquals(testComment, actualComment);
+    }
+
     @Test
     public void notEmptyFeedbackPage() throws Exception {
-//         TODO:
 //         fill the whole form, click "Send"
         fillWholeForm();
 //                Thread.sleep(3000);
         driver.findElement(By.cssSelector("button.w3-btn-block.w3-blue.w3-section")).click();
 //         check fields are filled correctly
-        checkFields();
+        checkFieldsFeedback2();
 //         check button colors
 //         (green with white letter and red with white letters)
         checkGreenRedButtons();
@@ -165,7 +211,6 @@ public class Task2 {
 
     @Test
     public void yesOnWithNameFeedbackPage() throws Exception {
-//         TODO:
 //         enter only name
         driver.findElement(By.id("fb_name")).sendKeys(testName);
 //         click "Send"
@@ -184,7 +229,6 @@ public class Task2 {
 
     @Test
     public void yesOnWithoutNameFeedbackPage() throws Exception {
-//         TODO:
 //         click "Send" (without entering anything
         driver.findElement(By.cssSelector("button.w3-btn-block.w3-blue.w3-section")).click();
 //         click "Yes"
@@ -198,7 +242,6 @@ public class Task2 {
 
     @Test
     public void noOnFeedbackPage() throws Exception {
-//         TODO:
 //         fill the whole form
         fillWholeForm();
 //         click "Send"
@@ -206,6 +249,7 @@ public class Task2 {
 //         click "No"
         driver.findElement(By.cssSelector("button.w3-btn.w3-red.w3-xlarge")).click();
 //         check fields are filled correctly
-        checkFields();
+        checkFieldsStartPage();
     }
+
 }
