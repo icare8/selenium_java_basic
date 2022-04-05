@@ -87,8 +87,8 @@ public class Task2 {
     static String testAge = "123";
     static String testComment = "Test Comment";
     static String testLanguage = "";
-    static String testOption = "Good";
-    static String testGender = "female";
+    static String testOpinion = "";
+    static String testGender = "";
     static int optionsIndex = 1;
 
     public void fillWholeForm() {
@@ -103,6 +103,10 @@ public class Task2 {
                 element.sendKeys(testAge);
                 return;
             }
+            if (element.getAttribute("name").equals("gender") && element.isEnabled()) {
+                /*Set expected gender to the last selected radio button*/
+                testGender = element.getAttribute("value");
+            }
             if (element.getAttribute("name").equals("language")) {
                 /*If a language option is checked, add its value to expected results*/
                 testLanguage += element.getAttribute("value") + ',';
@@ -111,21 +115,26 @@ public class Task2 {
         });
         /*Ignore trailing comma in languages list*/
         testLanguage = testLanguage.substring(0, testLanguage.length() - 1);
+
+        /* Select an option from the dropdown menu, add it to expected results*/
         Select selector = new Select(driver.findElement(By.id("like_us")));
         if (optionsIndex == 0) {
-            testOption = "null";
+            testOpinion = "null";
         } else {
             selector.selectByIndex(optionsIndex);
-            testOption = selector.getOptions().get(optionsIndex).getText();
+            testOpinion = selector.getOptions().get(optionsIndex).getText();
         }
+
+        /*Set comment*/
         driver.findElement(By.cssSelector("textarea.w3-input.w3-border")).sendKeys(testComment);
     }
 
-
+    /* Check all fields after pressing Send on the start page*/
     public void checkFieldsFeedback() {
         driver.findElements(By.cssSelector("div.w3-container > div.description > p ")).forEach(
                 (element) -> {
                     System.out.println(element.getText());
+                    /* Separate static text and thst, which was entered by the user */
                     String pText = element.getText();
                     pText = pText.substring(0, pText.indexOf(':') + 1);
                     switch (pText) {
@@ -142,7 +151,7 @@ public class Task2 {
                             assertEquals(testGender, element.findElement(By.tagName("span")).getText());
                             break;
                         case "Your option of us:":
-                            assertEquals(testOption, element.findElement(By.tagName("span")).getText());
+                            assertEquals(testOpinion, element.findElement(By.tagName("span")).getText());
                             break;
                         case "Your comment:":
                             assertEquals(testComment, element.findElement(By.tagName("span")).getText());
@@ -153,7 +162,7 @@ public class Task2 {
                 });
     }
 
-    /*A simpler alternative to checkFields() */
+    /*A simpler alternative to checkFieldsFeedback() */
     public void checkFieldsFeedback2() {
         WebElement result = driver.findElement(By.cssSelector("div.w3-container"));
         String expected = String.format("" +
@@ -167,13 +176,13 @@ public class Task2 {
                 testAge,
                 testLanguage,
                 testGender,
-                testOption.equals("null") ? "Choose your options" : testOption,
+                testOpinion.equals("null") ? "Choose your options" : testOpinion,
                 testComment
         );
         assertEquals(expected, result.getText());
     }
 
-    /*Check fields in the start form() */
+    /*Check fields in the start form (after pressing No on the second page) */
     public void checkFieldsStartPage() {
         assertEquals(testName, driver.findElement(By.id("fb_name")).getAttribute("value"));
         assertEquals(testAge, driver.findElement(By.id("fb_age")).getAttribute("value"));
@@ -190,7 +199,7 @@ public class Task2 {
         List<WebElement> selectedOptions = dropdown.getAllSelectedOptions();
         assertEquals(1, selectedOptions.size());
         String dropdownItem = selectedOptions.get(0).getText();
-        assertEquals(testOption, dropdownItem);
+        assertEquals(testOpinion, dropdownItem);
 
         String actualComment = driver.findElement(By.name("comment")).getAttribute("value");
         assertEquals(testComment, actualComment);
@@ -220,7 +229,6 @@ public class Task2 {
 //         check message text: "Thank you, NAME, for your feedback!"
         String expected = String.format("Thank you, %s, for your feedback!", testName);
         assertEquals(expected, driver.findElement(By.cssSelector("#message")).getText());
-        System.out.println(expected);
 //         color of text is white with green on the background
         assertEquals("rgba(76, 175, 80, 1)", driver.findElement(By.cssSelector("div.w3-panel.w3-green")).getCssValue("background-color"));
         assertEquals("rgba(255, 255, 255, 1)", driver.findElement(By.cssSelector("div.w3-panel.w3-green")).getCssValue("color"));
